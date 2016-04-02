@@ -1,0 +1,20 @@
+{% extends "form.html" %}
+
+{% block head %}
+{{super()}}
+{% endblock %}
+
+{% block main %}
+<form class="center" method="post" action="" name="{{formname}}">
+	<div class="form-group">
+		{{form.url.label}}
+		{{form.url(class_="form-control")}}
+	</div>
+ 	{% for error in form.url.errors %}
+   		<div class="alert alert-danger">
+  			{{error}}
+  		</div>
+  	{% endfor %}
+<button class="btn btn-primary" type="submit" name="thumblist">View images listed</button>
+{% endblock %}
+</form>

@@ -1,0 +1,10 @@
+{% block head %}
+<link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/item.css')}}">
+{% endblock %}
+{% block item %}
+<div class="item">
+	<h3 class="item-title">{{item.title}}</h3>
+	<div class="thumb"><img class="img-thumbnail" src="{{item.thumbnail}}"></div>
+	<p class="item-desc">{{item.description}}</p>
+</div>
+ {% endblock %}

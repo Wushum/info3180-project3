@@ -1,0 +1,20 @@
+.center {
+    margin: auto;
+    width: 40%;
+    padding: 25px;
+    margin-top: 15em;
+}
+body {
+    padding-top: 40px;
+    padding-bottom: 40px;
+    background-color: #885259;
+}
+
+form{
+	background-color: none;
+	border-radius: 50px;
+}
+
+li {
+	list-style: none;
+}

@@ -1,166 +1,108 @@
-"""
-Flask Documentation:     http://flask.pocoo.org/docs/
-Jinja2 Documentation:    http://jinja.pocoo.org/2/documentation/
-Werkzeug Documentation:  http://werkzeug.pocoo.org/documentation/
-
-This file creates your application.
-"""
-
-import os, time, datetime, json, requests, urlparse, urllib2
 from app import app, db
-from flask import render_template, request, redirect, url_for, jsonify, g, session, flash
-from flask.ext.login import LoginManager, login_user , logout_user , current_user , login_required
-from app.models import myprofile, mywish
-from app.forms import LoginForm, ProfileForm, WishForm
-from werkzeug.utils import secure_filename
-from functools import wraps
-from bs4 import BeautifulSoup
-from passlib.apps import custom_app_context as pwd_context
-from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired)
-
-
-app.secret_key = 'You cannot guess this'
-app.config.from_object(__name__)
-
-
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'login'
-
-
-@login_manager.user_loader
-def load_user(id):
-    return myprofile.query.get(int(id))
-
-
-@app.route('/api/token')
-@login_required
-def get_auth_token():
-    token = g.user.generate_auth_token()
-    return jsonify({ 'token': token.decode('ascii') })
-    
-
-@app.before_request
-def before_request():
-    g.user = current_user
+import os
+from FormInfo import *
+from random import randint
+from Models import *
+from image_getter import image_dem
+import requests
+from flask import render_template, request, url_for, redirect, jsonify, flash, session
+db.create_all()
 
 
 @app.route('/')
-def home():
-    """Render website's home page."""
-    return render_template('home.html')
-    
+def root():
+    return redirect(url_for('.login'))
 
-@app.route('/login', methods=['POST','GET'])
+
+@app.route("/login", methods=["POST", "GET"])
 def login():
-    error=None
-    form = LoginForm(request.form)
-    if request.method == 'POST':
-        attempted_email = request.form['email']
-        attempted_password = request.form['password']
-        db_creds = myprofile.query.filter_by(email=attempted_email).first()
-        db_email = db_creds.email
-        db_password = db_creds.password
-        db_id = db_creds.userid
-        if attempted_email == db_email and attempted_password == db_password:
-            session['logged_in'] = True
-            login_user(db_creds)
-            return redirect('/profile/'+str(db_id))
-        else:
-            error = 'Try again'
-            return render_template("home.html",error=error,form=form)
-    form = LoginForm()
-    return render_template("home.html",error=error,form=form)
+    login = LoginForm(csrf_enabled=False)
+    user = Profile()
+    if request.method == "POST":
+        login.populate_obj(user)
+        if login.validate_on_submit():
+            if user.validate():
+                session['username'] = user.username
+                return redirect(url_for('.home'))
+        flash("Password or Username INVALID")
+
+    return render_template('login.html', form=login, formname='login')
+
+
+@app.route("/signup", methods=["POST", "GET"])
+def signup():
+    user = Profile()
+    register = RegisterForm(csrf_enabled=False)
+    if request.method == "POST":
+        register.populate_obj(user)
+        if register.validate_on_submit():
+            db.session.add(user)
+            db.session.commit()
+            return redirect(url_for('.login'))
+    return render_template('register.html', form=register, formname="register")
+
+
+@app.route('/home')
+def home():
+    if session.has_key('username'):
+        item = Item.query.filter_by(username=session['username']).all()
+        return render_template('home.html', items=item)
+    return redirect(url_for('.login'))
 
 
 @app.route('/logout')
 def logout():
-    logout_user()
-    session['logged_in'] = False
-    return redirect('/')
+    if session.has_key('username'):
+        session.pop('username', None)
+    return redirect(url_for('.login'))
 
 
-@app.route('/profile/', methods = ['POST','GET'])
-def newprofile():
-    if request.method == 'POST':
-        form = ProfileForm()
-        email = request.form['email']
-        password = request.form['password']
-        newProfile = myprofile(email=email, password=password)
-        db.session.add(newProfile)
-        db.session.commit()
-        profilefilter = myprofile.query.filter_by(email=newProfile.email).first()
-        return redirect('/profile/'+str(profilefilter.userid))
-    form = ProfileForm()
-    return render_template('registration.html',form=form)
+@app.route('/thumburl', methods=['GET', 'POST'])
+def thumbnail_url():
+    if session.has_key('username'):
+        form = UrlForm()
+        if request.method == 'POST':
+            url = request.form['url']
+            session['images'] = image_dem(url)
+            return redirect(url_for('.thumbnaillist'))
+        return render_template('thumburl.html', form=form, formname="thumbnaillist")
+    return redirect(url_for('.login'))
 
 
-@app.route('/profile/<userid>')
-@login_required
-def profile_view(userid):
-    if g.user.is_authenticated:
-        profile_vars = {'id':g.user.userid, 'email':g.user.email}
-        return render_template('profile_view.html',profile=profile_vars)
-    
-
-@app.route('/profile/<id>/addurl', methods = ['POST','GET'])
-def addURL(id):
-    profile = myprofile.query.filter_by(userid=id).first()
-    profile_vars = {'id':profile.userid, 'email':profile.email}
-    if request.method == 'POST':
-        form = WishForm()
-        url = request.form['url']
-        result = requests.get(url)
-        data = result.text
-        images = []
-        soup = BeautifulSoup(data, 'html.parser')
-        og_image = (soup.find('meta', property='og:image') or soup.find('meta', attrs={'name': 'og:image'}))
-        if og_image and og_image['content']:
-            images.append(og_image['content'])
-        for img in soup.find_all("img", class_="a-dynamic-image"):
-            print img['src']
-            images.append(img['src'])
-        thumbnail_spec = soup.find('link', rel='image_src')
-        if thumbnail_spec and thumbnail_spec['href']:
-            images.append(thumbnail_spec['href'])
-        return render_template('pickimage.html',images=images)
-    form = WishForm()
-    return render_template('addWish.html',form=form,profile=profile_vars)
+@app.route('/thumbnaillist')
+def thumblist():
+    if session.has_key('username'):
+        images = session['images']
+        session.pop('images', None)
+        return render_template('thumbnaillist.html', images=images)
+    return redirect(url_for('.login'))
 
 
-@app.route('/about/')
-def about():
-    """Render the website's about page."""
-    return render_template('about.html')
+@app.route('/addwish', methods=['GET', 'POST'])
+def addwish():
+    if session.has_key('username'):
+        item = Item()
+        addwish = ThumbnailForm(csrf_enabled=False)
+        img_url = request.args.get('url')
+        if img_url != None:
+            addwish.url.data = img_url
+        if request.method == 'POST':
+            addwish.populate_obj(item)
+            if addwish.validate_on_submit():
+                item.username = session['username']
+                item.thumbnail = get_thumbnail(item.url)
+                db.session.add(item)
+                db.session.commit()
+                return redirect(url_for('.home'))
+        return render_template('addwish.html', form=addwish, formname='addtowishlist')
+    return redirect(url_for('.login'))
 
 
-###
-# The functions below should be applicable to all Flask apps.
-###
-
-@app.route('/<file_name>.txt')
-def send_text_file(file_name):
-    """Send your static text file."""
-    file_dot_text = file_name + '.txt'
-    return app.send_static_file(file_dot_text)
-
-
-@app.after_request
-def add_header(response):
-    """
-    Add headers to both force latest IE rendering engine or Chrome Frame,
-    and also to cache the rendered page for 10 minutes.
-    """
-    response.headers['X-UA-Compatible'] = 'IE=Edge,chrome=1'
-    response.headers['Cache-Control'] = 'public, max-age=0'
-    return response
-
-
-@app.errorhandler(404)
-def page_not_found(error):
-    """Custom 404 page."""
-    return render_template('404.html'), 404
-
-
-if __name__ == '__main__':
-    app.run()
+def get_thumbnail(url):
+    thumbnailurl = url_for(
+        'static', filename='img/thumbnail' + str(randint(0, 900)) + '.jpg')
+    filepath = os.path.dirname(os.path.abspath(__file__)) + thumbnailurl
+    f = open(filepath, 'wb')
+    f.write(requests.get(url).content)
+    f.close()
+    return thumburl

@@ -1,9 +1,17 @@
 {% extends "base.html" %}
-
-
-{% block js %}
+{% block head %}
+{{super()}}
+<link rel="stylesheet" type="text/css" href="{{url_for('static',filename='css/home.css')}}">
 {% endblock %}
 
-
 {% block main %}
+<h1 class="center"> Hello Welcome{{session['username']}}</h1>
+<a type="button" href="{{url_for('.thumbnail_url')}}"class=" wishlist btn btn-primary">add item to wishlist</a>
+<div><a type="button" href="{{url_for('.logout')}}"class=" wishlist btn btn-primary">Logout Here</a>
+</div>{% for item in items %}
+{% include "item.html" %}
+
+ {% endfor %}
+
+
 {% endblock %}

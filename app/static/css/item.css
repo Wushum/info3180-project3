@@ -1,0 +1,12 @@
+.thumb img{
+	height: 120px;
+	width: 100px;
+}
+
+.item{
+	margin: 2em;
+}
+
+.item-title{
+	margin-left: 15px;
+}
