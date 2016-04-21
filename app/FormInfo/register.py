@@ -1,14 +1,14 @@
 from flask.ext.wtf import Form
 from wtforms import StringField, PasswordField
 from wtforms.validators import DataRequired, Email, EqualTo
-from LoginForm import LoginForm
+from Login import Login
 from ..Models.Profile import Profile
-from ..Validators.DuplicateUser import DuplicateUser
+from ..Validators.DuplicateUser import Duplicate
 
 
-class RegisterForm(Form):
+class Register(Form):
     username = StringField("username", [DataRequired(
-        "You must enter a username"), DuplicateUser("This username is taken")])
+        "You must enter a username"), Duplicate("This username is taken")])
     password = PasswordField(
         "password", [DataRequired("You must enter a password")])
     retype_password = PasswordField(

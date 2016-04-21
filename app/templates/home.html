@@ -5,8 +5,8 @@
 {% endblock %}
 
 {% block main %}
-<h1 class="center"> Hello Welcome{{session['username']}}</h1>
-<a type="button" href="{{url_for('.thumbnail_url')}}"class=" wishlist btn btn-primary">add item to wishlist</a>
+<h1 class="center"> Hello {{session['username']}}Welcome</h1>
+<a type="button" href="{{url_for('.thumbnail_url')}}"class=" wishlist btn btn-primary">Add item to wishlist</a>
 <div><a type="button" href="{{url_for('.logout')}}"class=" wishlist btn btn-primary">Logout Here</a>
 </div>{% for item in items %}
 {% include "item.html" %}

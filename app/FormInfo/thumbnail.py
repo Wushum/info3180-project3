@@ -4,7 +4,7 @@ from wtforms.validators import DataRequired, URL
 from UrlForm import UrlForm
 
 
-class ThumbnailForm(UrlForm):
+class Thumbnail(UrlForm):
     title = StringField("title", [DataRequired("There has to be a title")])
     description = StringField("description", [DataRequired(
         "There must be a description")])

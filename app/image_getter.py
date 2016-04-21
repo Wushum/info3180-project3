@@ -14,8 +14,8 @@ def image_dem(url):
     if thumbnail_spec and thumbnail_spec['href']:
         print thumbnail_spec['href']
     image = """<img src="%s"><br />"""
-    imagelst = []
+    imagelist = []
     for img in soup.findAll("img", src=True):
         if "sprite" not in img["src"]:
-            imagelst.append(urlparse.urljoin(url, img["src"]))
-    return imagelst
+            imagelist.append(urlparse.urljoin(url, img["src"]))
+    return imagelist

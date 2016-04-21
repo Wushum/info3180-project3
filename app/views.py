@@ -1,6 +1,7 @@
 from app import app, db
 import os
 from FormInfo import *
+import urlForm
 from random import randint
 from Models import *
 from image_getter import image_dem
@@ -24,7 +25,7 @@ def login():
             if user.validate():
                 session['username'] = user.username
                 return redirect(url_for('.home'))
-        flash("Password or Username INVALID")
+        flash("Your password or username is invalid")
 
     return render_template('login.html', form=login, formname='login')
 
@@ -60,7 +61,7 @@ def logout():
 @app.route('/thumburl', methods=['GET', 'POST'])
 def thumbnail_url():
     if session.has_key('username'):
-        form = UrlForm()
+        form = urlForm()
         if request.method == 'POST':
             url = request.form['url']
             session['images'] = image_dem(url)
@@ -106,3 +107,6 @@ def get_thumbnail(url):
     f.write(requests.get(url).content)
     f.close()
     return thumburl
+    
+if __name__ == '__main__':
+    app.run(debug=True,host="0.0.0.0",port="8888")

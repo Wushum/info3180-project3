@@ -1,4 +1,4 @@
-from ..Models.Profile import Profile
+from Models.Profile import Profile
 from wtforms.validators import ValidationError
 
 

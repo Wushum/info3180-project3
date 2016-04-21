@@ -3,7 +3,7 @@ from wtforms import StringField, validators, PasswordField
 from wtforms.validators import DataRequired
 
 
-class LoginForm(Form):
+class Login(Form):
 
     username = StringField(
         "username", [DataRequired("You must enter a username")])
