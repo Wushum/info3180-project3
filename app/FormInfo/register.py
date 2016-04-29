@@ -2,8 +2,8 @@ from flask.ext.wtf import Form
 from wtforms import StringField, PasswordField
 from wtforms.validators import DataRequired, Email, EqualTo
 from Login import Login
-from ..Models.Profile import Profile
-from ..Validators.DuplicateUser import Duplicate
+from Models.Profile import Profile
+from Validators.DuplicateUser import Duplicate
 
 
 class Register(Form):

@@ -2,6 +2,8 @@ from app import app, db
 import os
 from FormInfo import *
 import urlForm
+import requests
+import smtplib
 from random import randint
 from Models import *
 from image_getter import image_dem

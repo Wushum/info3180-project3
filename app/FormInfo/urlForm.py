@@ -5,5 +5,7 @@ from wtforms.validators import DataRequired, URL
 
 class UrlForm(Form):
     url = StringField(
-        "url", [DataRequired("There has to be a URL"), URL(False, "Enter a valid URL")])
+        "url", [DataRequired("You must entera URL"), URL(False, "Enter a valid URL")])
+   
+   
    

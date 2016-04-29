@@ -5,7 +5,7 @@ from app import db
 
 
 class Profile(db.Model):
-    """Model for a User profile"""
+    """User Profile"""
     __tablename__ = 'Profile'
 
     id = Column(Integer, primary_key=True)
@@ -28,3 +28,5 @@ class Profile(db.Model):
             return True
         else:
             return False
+            
+            

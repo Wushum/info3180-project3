@@ -4,9 +4,10 @@ from app import db
 
 
 class Item(db.Model):
-    """Model for a wishlist item"""
+    """WishList Item"""
 
     __tablename__ = "Item"
+    package = "web 2"
 
     id = Column(Integer, primary_key=True)
     username = Column(
